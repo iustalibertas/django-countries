@@ -9,6 +9,7 @@ from django_countries import countries
 class CountryField(serializers.Field):
 
     def __init__(self, *args, **kwargs):
+        self.return_none = kwargs.pop('return_none', None)
         self.country_dict = kwargs.pop('country_dict', None)
         countries_class = kwargs.pop('countries', None)
         self.countries = countries_class() if countries_class else countries
@@ -17,7 +18,10 @@ class CountryField(serializers.Field):
     def to_representation(self, obj):
         code = self.countries.alpha2(obj)
         if not code:
-            return ''
+            if not self.return_none:
+                return ''
+            else:
+                return None
         if not self.country_dict:
             return code
         return {'code': code, 'name': force_text(self.countries.name(obj))}
